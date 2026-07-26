@@ -10,7 +10,6 @@ import subprocess
 import argparse
 
 def run_cmd(cmd, check=True):
-    """执行命令，返回输出"""
     print(f"🔧 {cmd}")
     result = subprocess.run(cmd, shell=True, capture_output=True, text=True)
     if result.returncode != 0 and check:
@@ -28,6 +27,10 @@ def main():
     msg = args.msg or f"Release {tag}"
 
     print(f"📦 准备发布: {tag}")
+
+    # 验证版本号格式（建议 x.y.z）
+    if len(args.version.split(".")) != 3:
+        print("⚠️ 建议使用 x.y.z 格式，如 1.0.0")
 
     # 1. 确保在 main 分支
     branch = run_cmd("git branch --show-current")
@@ -47,16 +50,19 @@ def main():
     # 3. 推送代码
     run_cmd("git push origin main")
 
-    # 4. 检查 tag 是否已存在
-    existing = run_cmd(f"git tag -l {tag}", check=False)
-    if existing:
-        print(f"⚠️ Tag {tag} 已存在")
-        if input("是否删除并重新创建？(y/N): ").lower() != "y":
-            print("⏭️ 跳过 tag 创建")
-            sys.exit(0)
+    # 4. 检查 tag 是否已存在（本地）
+    local_tag = run_cmd(f"git tag -l {tag}", check=False)
+    if local_tag:
+        print(f"⚠️ 本地 Tag {tag} 已存在，删除...")
         run_cmd(f"git tag -d {tag}")
 
-    # 5. 创建并推送 tag（使用双引号避免 Windows 转义问题）
+    # 5. 检查远程 tag 是否存在，如果存在则删除
+    remote_tags = run_cmd(f"git ls-remote --tags origin {tag}", check=False)
+    if remote_tags:
+        print(f"⚠️ 远程 Tag {tag} 已存在，删除...")
+        run_cmd(f"git push origin :refs/tags/{tag}")
+
+    # 6. 创建并推送 tag
     run_cmd(f'git tag -a {tag} -m "{msg}"')
     run_cmd(f"git push origin {tag}")
 
