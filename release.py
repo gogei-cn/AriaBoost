@@ -24,6 +24,7 @@ def main():
     args = parser.parse_args()
 
     tag = f"v{args.version}"
+    # 如果没有提供自定义消息，使用包含 tag 的默认消息
     msg = args.msg or f"Release {tag}"
 
     print(f"📦 准备发布: {tag}")
@@ -39,7 +40,7 @@ def main():
         if input("继续？(y/N): ").lower() != "y":
             sys.exit(0)
 
-    # 2. 提交变更
+    # 2. 提交变更（使用动态消息）
     run_cmd("git add .")
     status = run_cmd("git status --porcelain", check=False)
     if status:
@@ -62,7 +63,7 @@ def main():
         print(f"⚠️ 远程 Tag {tag} 已存在，删除...")
         run_cmd(f"git push origin :refs/tags/{tag}")
 
-    # 6. 创建并推送 tag
+    # 6. 创建并推送 tag（使用动态消息）
     run_cmd(f'git tag -a {tag} -m "{msg}"')
     run_cmd(f"git push origin {tag}")
 
