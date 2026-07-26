@@ -1,51 +1,128 @@
-# Python 字节缓存
+# Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
 *$py.class
-*.so
-.Python
+
+# Virtual environments
+venv/
 env/
-build_env/
-build/
-develop-eggs/
-dist/
-eggs/
-.eggs/
-lib/
-lib64/
-parts/
-sdist/
-var/
-*.egg-info/
-.installed.cfg
-*.egg
+.venv/
+ENV/
+env.bak/
+venv.bak/
 
-# Nuitka 编译缓存/输出
-dist_win/
-dist_linux/
-*.spec
-*.build/
-.nuitka-cache/
-
-# 程序运行生成文件
-config.json
-ariaboost_state.json
-*.log
-
-# IDE 配置
+# IDE
 .vscode/
 .idea/
 *.swp
 *.swo
-*.iml
-.DS_Store
+*~
 
-# 系统文件
-Thumbs.db
-desktop.ini
-
-# 打包临时文件
+# Build outputs
+dist/
+build/
+*.spec
+*.exe
+*.app
+*.dmg
 *.zip
 *.tar.gz
-*.ico
-*.icns
+
+# Nuitka cache
+*.build/
+*.dist/
+
+# Configuration files (local user settings)
+config.json
+ariaboost_state.json
+*.tmp
+
+# Logs and databases
+*.log
+*.sqlite
+*.db
+
+# OS generated files
+.DS_Store
+Thumbs.db
+desktop.ini
+ehthumbs.db
+
+# Python coverage reports
+htmlcov/
+.tox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
+.hypothesis/
+.pytest_cache/
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# Jupyter Notebooks
+.ipynb_checkpoints/
+
+# Pyre type checker
+.pyre/
+
+# Python eggs
+*.egg-info/
+*.egg
+MANIFEST
+
+# Generated release files
+*.exe
+*.app
+*.dmg
+*.zip
+*.tar.gz
+
+# GitHub Actions local test
+*.log
+
+# Miscellaneous
+*.pem
+*.key
+*.crt
+
+# pipenv
+Pipfile.lock
+
+# poetry
+poetry.lock
+
+# pdm
+.pdm.toml
+
+# mypy
+.mypy_cache/
+
+# pyright
+.pyright/
+
+# ruff
+.ruff_cache/
+
+# Nuitka cache
+~/AppData/Local/Nuitka/Nuitka
+~/.cache/Nuitka
+~/Library/Caches/Nuitka
+
+# Python bytecode
+*.pyc
+
+# Local development files
+.vscode/
+.idea/
+*.iml
+
+# Hidden files
+*.secret
+*.env
+.env.local
+.env.*.local
