@@ -8,9 +8,9 @@ GitHub Actions 会自动构建并创建 Release
 import sys
 import subprocess
 import argparse
-from datetime import datetime
 
 def run_cmd(cmd, check=True):
+    """执行命令，返回输出"""
     print(f"🔧 {cmd}")
     result = subprocess.run(cmd, shell=True, capture_output=True, text=True)
     if result.returncode != 0 and check:
@@ -47,8 +47,17 @@ def main():
     # 3. 推送代码
     run_cmd("git push origin main")
 
-    # 4. 打 tag 并推送
-    run_cmd(f"git tag -a {tag} -m '{msg}'")
+    # 4. 检查 tag 是否已存在
+    existing = run_cmd(f"git tag -l {tag}", check=False)
+    if existing:
+        print(f"⚠️ Tag {tag} 已存在")
+        if input("是否删除并重新创建？(y/N): ").lower() != "y":
+            print("⏭️ 跳过 tag 创建")
+            sys.exit(0)
+        run_cmd(f"git tag -d {tag}")
+
+    # 5. 创建并推送 tag（使用双引号避免 Windows 转义问题）
+    run_cmd(f'git tag -a {tag} -m "{msg}"')
     run_cmd(f"git push origin {tag}")
 
     print(f"✅ 发布完成！")
