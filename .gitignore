@@ -1,0 +1,51 @@
+# Python 字节缓存
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+build_env/
+build/
+develop-eggs/
+dist/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Nuitka 编译缓存/输出
+dist_win/
+dist_linux/
+*.spec
+*.build/
+.nuitka-cache/
+
+# 程序运行生成文件
+config.json
+ariaboost_state.json
+*.log
+
+# IDE 配置
+.vscode/
+.idea/
+*.swp
+*.swo
+*.iml
+.DS_Store
+
+# 系统文件
+Thumbs.db
+desktop.ini
+
+# 打包临时文件
+*.zip
+*.tar.gz
+*.ico
+*.icns

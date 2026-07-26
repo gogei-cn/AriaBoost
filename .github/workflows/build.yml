@@ -1,0 +1,128 @@
+name: Build AriaBoost
+
+on:
+    push:
+        branches: ["main"]
+        tags: ["v*"]
+    pull_request:
+        branches: ["main"]
+    workflow_dispatch:
+
+permissions:
+    contents: write
+
+jobs:
+    build:
+        runs-on: ${{ matrix.os }}
+        strategy:
+            matrix:
+                include:
+                    - os: windows-latest
+                      exe_name: AriaBoost.exe
+                      asset_name: AriaBoost-Windows.exe
+                      build_args: --onefile --windows-disable-console --python-flag=no_asserts,no_docstrings
+                      artifact_path: dist/AriaBoost.exe
+                    - os: ubuntu-latest
+                      exe_name: AriaBoost
+                      asset_name: AriaBoost-Linux
+                      build_args: --onefile --python-flag=no_asserts,no_docstrings
+                      artifact_path: dist/AriaBoost
+                    - os: macos-latest
+                      exe_name: AriaBoost
+                      asset_name: AriaBoost-macOS.zip
+                      build_args: --macos-create-app-bundle --python-flag=no_asserts,no_docstrings
+                      artifact_path: dist/AriaBoost-macOS.zip
+
+        steps:
+            - uses: actions/checkout@v4
+
+            - name: Set up Python
+              uses: actions/setup-python@v5
+              with:
+                  python-version: "3.10"
+                  cache: "pip"
+
+            - name: Install lld (Linux)
+              if: runner.os == 'Linux'
+              run: sudo apt-get install -y lld
+
+            - name: Cache Nuitka
+              uses: actions/cache@v4
+              with:
+                  path: |
+                      ~/.cache/Nuitka
+                      ~/AppData/Local/Nuitka/Nuitka
+                      ~/Library/Caches/Nuitka
+                  key: ${{ runner.os }}-nuitka-${{ github.sha }}
+                  restore-keys: |
+                      ${{ runner.os }}-nuitka-
+
+            - name: Cache ccache
+              if: runner.os != 'Windows'
+              uses: actions/cache@v4
+              with:
+                  path: ~/.ccache
+                  key: ${{ runner.os }}-ccache-${{ github.sha }}
+                  restore-keys: |
+                      ${{ runner.os }}-ccache-
+
+            - name: Install ccache (macOS)
+              if: runner.os == 'macOS'
+              run: brew install ccache
+
+            - name: Install ccache (Linux)
+              if: runner.os == 'Linux'
+              run: sudo apt-get update && sudo apt-get install -y ccache
+
+            - name: Install Linux system libs
+              if: runner.os == 'Linux'
+              run: |
+                  sudo apt-get update
+                  sudo apt-get install -y libgl1 libglx-mesa0 libgl1-mesa-dri libxcb-cursor0 libxcb-xinerama0
+
+            - name: Install dependencies
+              run: |
+                  python -m pip install --upgrade pip
+                  pip install -r requirements.txt
+                  pip install nuitka zstandard ordered-set
+
+            - name: Build with Nuitka (Linux)
+              if: runner.os == 'Linux'
+              env:
+                  LDFLAGS: -fuse-ld=lld
+              run: |
+                  python -m nuitka --assume-yes-for-downloads --standalone --jobs=auto --output-dir=dist --output-filename=${{ matrix.exe_name }} ${{ matrix.build_args }} --plugin-enable=pyside6 src/main.py
+
+            - name: Build with Nuitka (Windows/macOS)
+              if: runner.os != 'Linux'
+              run: |
+                  python -m nuitka --assume-yes-for-downloads --standalone --jobs=auto --output-dir=dist --output-filename=${{ matrix.exe_name }} ${{ matrix.build_args }} --plugin-enable=pyside6 src/main.py
+
+            - name: Package macOS app
+              if: runner.os == 'macOS'
+              run: |
+                  mv dist/main.app dist/AriaBoost.app
+                  cd dist
+                  zip -r AriaBoost-macOS.zip AriaBoost.app
+                  cd ..
+
+            - name: Upload Artifact
+              uses: actions/upload-artifact@v4
+              with:
+                  name: ${{ matrix.asset_name }}
+                  path: ${{ matrix.artifact_path }}
+
+    release:
+        needs: build
+        runs-on: ubuntu-latest
+        if: startsWith(github.ref, 'refs/tags/')
+        steps:
+            - uses: actions/download-artifact@v4
+              with:
+                  path: artifacts
+                  merge-multiple: true
+
+            - name: Create Release
+              uses: softprops/action-gh-release@v2
+              with:
+                  files: artifacts/*
